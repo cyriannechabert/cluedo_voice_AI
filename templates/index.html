@@ -3,261 +3,530 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detective Game - Sound Mystery</title>
+    <title>Detective Case Files - Mystery Investigation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Courier New', monospace;
-            background: #0a0a0a;
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f1419 100%);
             color: #e0e0e0;
             padding: 20px;
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
-        
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 0, 0, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .container {
-            max-width: 800px;
+            max-width: 1400px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
-        
+
         h1 {
+            font-family: 'Special Elite', cursive;
             text-align: center;
-            color: #ff6b6b;
-            margin-bottom: 30px;
-            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+            color: #d4af37;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4),
+                         0 0 40px rgba(212, 175, 55, 0.2);
+            font-size: 3.5em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #999;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+            font-style: italic;
+            letter-spacing: 2px;
         }
         
         .case-section {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
+            background: rgba(26, 26, 26, 0.9);
+            border: 3px solid #d4af37;
+            padding: 40px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7),
+                        inset 0 0 30px rgba(212, 175, 55, 0.05);
+            backdrop-filter: blur(10px);
         }
-        
+
         .case-description {
-            font-size: 18px;
-            margin-bottom: 20px;
+            font-size: 1.4em;
+            margin-bottom: 40px;
             color: #fff;
-            line-height: 1.6;
+            line-height: 1.8;
+            text-align: center;
+            padding: 25px;
+            background: rgba(139, 0, 0, 0.1);
+            border-left: 4px solid #8b0000;
+            border-radius: 5px;
+            font-style: italic;
         }
-        
+
+        .section-title {
+            font-family: 'Special Elite', cursive;
+            color: #d4af37;
+            font-size: 2em;
+            margin: 30px 0 25px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
         .characters-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
         }
-        
+
         .character-card {
-            background: #252525;
-            border: 2px solid #444;
-            padding: 15px;
-            border-radius: 5px;
+            background: linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%);
+            border: 3px solid #444;
+            padding: 0;
+            border-radius: 15px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
         }
-        
-        .character-card:hover {
-            border-color: #ff6b6b;
-            transform: translateY(-2px);
-        }
-        
-        .character-card.active {
-            border-color: #ff6b6b;
-            background: #2a1a1a;
-        }
-        
-        .character-name {
-            font-weight: bold;
-            color: #ff6b6b;
-            margin-bottom: 5px;
-        }
-        
-        .character-role {
-            font-size: 12px;
-            color: #aaa;
-        }
-        
-        .conversation-area {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            min-height: 300px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .message {
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        
-        .message.player {
-            background: #2a3a4a;
-            text-align: right;
-        }
-        
-        .message.character {
-            background: #3a2a2a;
-        }
-        
-        .message-label {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 5px;
-        }
-        
-        button {
-            padding: 12px 24px;
-            background: #ff6b6b;
-            border: none;
-            color: #fff;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        
-        button:hover {
-            background: #ff5252;
-        }
-        
-        button:disabled {
-            background: #555;
-            cursor: not-allowed;
-        }
-        
-        .suspect-section {
-            background: #1a1a1a;
-            border: 2px solid #ff6b6b;
-            padding: 20px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        
-        .suspect-input {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .btn-generate {
-            background: #4caf50;
-            margin-bottom: 20px;
-        }
-        
-        .btn-generate:hover {
-            background: #45a049;
-        }
-        
-        .result {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        
-        .result.correct {
-            background: #1a4a1a;
-            color: #4caf50;
-        }
-        
-        .result.incorrect {
-            background: #4a1a1a;
-            color: #ff6b6b;
-        }
-        
-        .audio-controls {
-            margin-top: 10px;
-        }
-        
-        .btn-audio {
-            background: #2196F3;
-            font-size: 16px;
-            padding: 15px 30px;
-            font-weight: bold;
+
+        .character-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            margin-bottom: 10px;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(212, 175, 55, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
         }
-        
-        .btn-audio:hover {
-            background: #1976D2;
+
+        .character-card:hover {
+            border-color: #d4af37;
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.3),
+                        0 0 30px rgba(212, 175, 55, 0.2);
         }
-        
-        .btn-audio.active {
-            background: #ff6b6b;
-            animation: pulse 2s infinite;
+
+        .character-card:hover::before {
+            opacity: 1;
         }
-        
-        .btn-audio:disabled {
-            background: #555;
-            cursor: not-allowed;
+
+        .character-card.active {
+            border-color: #d4af37;
+            background: linear-gradient(145deg, #2a1a1a 0%, #1a0d0d 100%);
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.5),
+                        inset 0 0 30px rgba(212, 175, 55, 0.1);
+            transform: scale(1.05);
         }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .voice-status {
-            margin-top: 10px;
-            padding: 15px;
-            background: #252525;
-            border-radius: 5px;
-            font-size: 16px;
-            color: #fff;
-            text-align: center;
-            min-height: 50px;
+
+        .character-avatar {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
             display: flex;
             align-items: center;
             justify-content: center;
+            border-bottom: 2px solid #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .character-avatar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.5) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .character-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            position: relative;
+            z-index: 0;
+        }
+
+        .character-info {
+            padding: 20px;
+        }
+
+        .character-name {
+            font-family: 'Special Elite', cursive;
+            font-weight: bold;
+            color: #d4af37;
+            margin-bottom: 8px;
+            font-size: 1.5em;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .character-role {
+            font-size: 1.1em;
+            color: #aaa;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .character-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(212, 175, 55, 0.9);
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
         }
         
-        .voice-status.listening {
-            background: #1a3a1a;
+        .conversation-container {
+            margin-top: 30px;
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .conversation-container.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .conversation-area {
+            background: rgba(13, 13, 13, 0.8);
+            border: 2px solid #444;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            min-height: 350px;
+            max-height: 450px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .conversation-area::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .conversation-area::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 5px;
+        }
+
+        .conversation-area::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 5px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.player {
+            background: linear-gradient(135deg, #1a2a3a 0%, #2a3a4a 100%);
+            text-align: right;
+            border-left: 4px solid #4a9eff;
+            margin-left: 20%;
+        }
+
+        .message.character {
+            background: linear-gradient(135deg, #2a1a1a 0%, #3a2a2a 100%);
+            border-left: 4px solid #d4af37;
+            margin-right: 20%;
+        }
+
+        .message-label {
+            font-size: 0.9em;
+            color: #d4af37;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-family: 'Special Elite', cursive;
+        }
+
+        .message-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+
+        button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #8b0000 0%, #6b0000 100%);
+            border: 2px solid #d4af37;
+            color: #d4af37;
+            font-family: 'Special Elite', cursive;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        button:disabled {
+            background: #333;
+            border-color: #555;
+            color: #777;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .suspect-section {
+            background: rgba(26, 26, 26, 0.9);
+            border: 3px solid #8b0000;
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 40px;
+            box-shadow: 0 10px 30px rgba(139, 0, 0, 0.3),
+                        inset 0 0 20px rgba(139, 0, 0, 0.1);
+        }
+
+        .suspect-section h3 {
+            font-family: 'Special Elite', cursive;
+            color: #d4af37;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            letter-spacing: 2px;
+        }
+
+        .suspect-input {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .suspect-input input {
+            flex: 1;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #444;
+            color: #fff;
+            font-family: 'Crimson Text', serif;
+            font-size: 1.2em;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .suspect-input input:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #1a5a1a 0%, #0f3a0f 100%);
+            border-color: #4caf50;
             color: #4caf50;
+            margin-bottom: 30px;
+            width: 100%;
+            padding: 20px;
+            font-size: 1.3em;
         }
-        
+
+        .btn-generate:hover {
+            background: linear-gradient(135deg, #4caf50 0%, #3a8f3a 100%);
+            color: #000;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.2em;
+            border: 2px solid;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .result.correct {
+            background: linear-gradient(135deg, #1a4a1a 0%, #0d2a0d 100%);
+            color: #4caf50;
+            border-color: #4caf50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .result.incorrect {
+            background: linear-gradient(135deg, #4a1a1a 0%, #2a0d0d 100%);
+            color: #ff6b6b;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .audio-controls {
+            margin-top: 20px;
+        }
+
+        .btn-audio {
+            background: linear-gradient(135deg, #1a3a5a 0%, #0f2a3f 100%);
+            border-color: #2196F3;
+            color: #2196F3;
+            font-size: 1.2em;
+            padding: 18px 35px;
+            font-weight: bold;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .btn-audio:hover {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: #000;
+        }
+
+        .btn-audio.active {
+            background: linear-gradient(135deg, #8b0000 0%, #6b0000 100%);
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+
+        .btn-audio:disabled {
+            background: #333;
+            border-color: #555;
+            color: #777;
+            cursor: not-allowed;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); }
+            50% { opacity: 0.8; box-shadow: 0 0 30px rgba(255, 107, 107, 0.5); }
+        }
+
+        .voice-status {
+            margin-top: 15px;
+            padding: 20px;
+            background: rgba(37, 37, 37, 0.8);
+            border-radius: 8px;
+            border: 2px solid #444;
+            font-size: 1.1em;
+            color: #fff;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Crimson Text', serif;
+        }
+
+        .voice-status.listening {
+            background: linear-gradient(135deg, #1a3a1a 0%, #0d2a0d 100%);
+            color: #4caf50;
+            border-color: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
         .voice-status.processing {
-            background: #3a3a1a;
+            background: linear-gradient(135deg, #3a3a1a 0%, #2a2a0d 100%);
             color: #ffc107;
+            border-color: #ffc107;
+        }
+
+        input::placeholder {
+            color: #666;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Detective Game - Sound Mystery</h1>
-        
-        <button class="btn-generate" onclick="generateCase()">Generate New Case</button>
-        
+        <h1>Case Files</h1>
+        <div class="subtitle">Confidential Investigation</div>
+
+        <button class="btn-generate" onclick="generateCase()">📋 Generate New Case</button>
+
         <div id="case-section" class="case-section" style="display: none;">
             <div class="case-description" id="case-description"></div>
-            
-            <h3>Characters:</h3>
+
+            <h2 class="section-title">Suspects & Witnesses</h2>
             <div class="characters-grid" id="characters-grid"></div>
-            
-            <div class="conversation-area" id="conversation-area" style="display: none;">
-                <!-- Conversation log hidden by default, voice-only mode -->
+
+            <div class="conversation-container" id="conversation-container">
+                <h2 class="section-title">Interrogation Room</h2>
+
+                <div class="conversation-area" id="conversation-area">
+                    <div style="text-align: center; color: #666; font-style: italic;">
+                        Conversation history will appear here...
+                    </div>
+                </div>
+
+                <div class="audio-controls">
+                    <button class="btn-audio" onclick="toggleVoiceMode()" id="voice-btn">🎤 Start Voice Conversation</button>
+                </div>
             </div>
-            
-            <div class="audio-controls">
-                <button class="btn-audio" onclick="toggleVoiceMode()" id="voice-btn">🎤 Start Voice Conversation</button>
-            </div>
-            
+
             <div class="suspect-section">
-                <h3>Who is the suspect?</h3>
+                <h3>Submit Your Accusation</h3>
                 <div class="suspect-input">
                     <input type="text" id="suspect-input" placeholder="Enter suspect name..." onkeypress="handleSuspectKeyPress(event)">
-                    <button onclick="submitSuspect()">Submit Suspect</button>
+                    <button onclick="submitSuspect()">Accuse</button>
                 </div>
                 <div id="result"></div>
             </div>
@@ -390,10 +659,10 @@
         
         async function sendVoiceMessage(message) {
             if (!currentCharacter) return;
-            
+
             addMessage('You', message, true);
             updateVoiceStatus('Getting response from ' + currentCharacter + '...', 'processing');
-            
+
             try {
                 const response = await fetch('/api/converse', {
                     method: 'POST',
@@ -405,16 +674,25 @@
                         message: message
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     addMessage(currentCharacter, data.response);
-                    
+
+                    // Track conversation
+                    if (!game_state.conversations[currentCharacter]) {
+                        game_state.conversations[currentCharacter] = [];
+                    }
+                    game_state.conversations[currentCharacter].push({
+                        player: message,
+                        character: data.response
+                    });
+
                     // Always play audio in voice mode
                     updateVoiceStatus('Speaking response...', 'processing');
                     await playAudio(data.response, currentCharacter);
-                    
+
                     // Continue listening after response
                     if (voiceMode) {
                         updateVoiceStatus('🎤 Listening... Speak now', 'listening');
@@ -423,6 +701,8 @@
                                 startListening();
                             }
                         }, 500);
+                    } else {
+                        updateVoiceStatus('Response received. Click "Start Voice Conversation" to continue.');
                     }
                 } else {
                     updateVoiceStatus('Error: ' + (data.error || 'Unknown error'));
@@ -445,12 +725,27 @@
                     method: 'POST'
                 });
                 const data = await response.json();
-                
+
                 if (data.success) {
                     document.getElementById('case-section').style.display = 'block';
                     document.getElementById('case-description').textContent = data.case.case_description;
                     characters = data.case.characters;
+
+                    // Initialize conversation tracking
+                    game_state.conversations = {};
+                    characters.forEach(char => {
+                        game_state.conversations[char.name] = [];
+                    });
+
                     renderCharacters();
+
+                    // Hide conversation container until a character is selected
+                    document.getElementById('conversation-container').classList.remove('active');
+                    currentCharacter = null;
+
+                    // Clear result
+                    document.getElementById('result').innerHTML = '';
+                    document.getElementById('suspect-input').value = '';
                 }
             } catch (error) {
                 console.error('Error generating case:', error);
@@ -458,16 +753,63 @@
             }
         }
         
+        function getCharacterAvatar(character) {
+            // Available images: Man-25, Man-35, Man-60, Woman-20, Woman-30, Woman-35
+            const availableImages = {
+                'male': [25, 35, 60],
+                'female': [20, 30, 35]
+            };
+
+            // Get character gender and age
+            let gender = character.gender || 'male';
+            let age = character.age || 30;
+
+            // Normalize gender
+            gender = gender.toLowerCase();
+            if (gender === 'female' || gender === 'woman') {
+                gender = 'female';
+            } else {
+                gender = 'male';
+            }
+
+            // Find closest age match from available images
+            const genderKey = gender === 'female' ? 'Woman' : 'Man';
+            const availableAges = availableImages[gender];
+
+            // Find the closest age
+            let closestAge = availableAges[0];
+            let minDiff = Math.abs(age - closestAge);
+
+            for (const availableAge of availableAges) {
+                const diff = Math.abs(age - availableAge);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestAge = availableAge;
+                }
+            }
+
+            // Return image path
+            return `/characters/${genderKey}-${closestAge}.png`;
+        }
+
         function renderCharacters() {
             const grid = document.getElementById('characters-grid');
             grid.innerHTML = '';
-            
-            characters.forEach(char => {
+
+            characters.forEach((char, index) => {
                 const card = document.createElement('div');
                 card.className = 'character-card';
+                const avatarUrl = getCharacterAvatar(char);
+
                 card.innerHTML = `
-                    <div class="character-name">${char.name}</div>
-                    <div class="character-role">${char.role}</div>
+                    <div class="character-badge">Witness ${index + 1}</div>
+                    <div class="character-avatar">
+                        <img src="${avatarUrl}" alt="${char.name}" />
+                    </div>
+                    <div class="character-info">
+                        <div class="character-name">${char.name}</div>
+                        <div class="character-role">${char.role}</div>
+                    </div>
                 `;
                 card.onclick = () => selectCharacter(char.name);
                 grid.appendChild(card);
@@ -483,38 +825,87 @@
                 btn.textContent = '🎤 Start Voice Conversation';
                 btn.classList.remove('active');
             }
-            
+
             currentCharacter = name;
-            
+
             // Update UI
             document.querySelectorAll('.character-card').forEach(card => {
                 card.classList.remove('active');
             });
-            
+
             const cards = document.querySelectorAll('.character-card');
             characters.forEach((char, index) => {
                 if (char.name === name) {
                     cards[index].classList.add('active');
                 }
             });
-            
+
+            // Show conversation container
+            const container = document.getElementById('conversation-container');
+            container.classList.add('active');
+
             // Load conversation history
             loadConversation(name);
-            
+
             // Update status
             updateVoiceStatus('Character selected: ' + name + '. Click "Start Voice Conversation" to begin.');
+
+            // Scroll to conversation area
+            setTimeout(() => {
+                container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
         }
-        
+
         function loadConversation(characterName) {
-            // Voice-only mode - no text display needed
+            const conversationArea = document.getElementById('conversation-area');
+            conversationArea.innerHTML = '';
+
+            // Show existing conversation if any
+            const history = game_state.conversations[characterName] || [];
+            if (history.length === 0) {
+                conversationArea.innerHTML = `
+                    <div style="text-align: center; color: #666; font-style: italic; padding: 40px;">
+                        No conversation yet with ${characterName}.<br>
+                        Start a voice conversation to begin the interrogation.
+                    </div>
+                `;
+            } else {
+                history.forEach(exchange => {
+                    addMessage('You', exchange.player, true);
+                    addMessage(characterName, exchange.character, false);
+                });
+            }
+
             updateVoiceStatus('Character selected: ' + characterName + '. Click "Start Voice Conversation" to begin.');
         }
-        
+
         function addMessage(sender, message, isPlayer = false) {
-            // In voice-only mode, we don't display text messages
-            // Just log to console for debugging
+            const conversationArea = document.getElementById('conversation-area');
+
+            // Clear placeholder text if exists
+            const placeholder = conversationArea.querySelector('[style*="text-align: center"]');
+            if (placeholder) {
+                conversationArea.innerHTML = '';
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isPlayer ? 'player' : 'character'}`;
+            messageDiv.innerHTML = `
+                <div class="message-label">${sender}</div>
+                <div class="message-text">${message}</div>
+            `;
+
+            conversationArea.appendChild(messageDiv);
+            conversationArea.scrollTop = conversationArea.scrollHeight;
+
+            // Also log to console for debugging
             console.log(`${isPlayer ? 'You' : sender}: ${message}`);
         }
+
+        // Track game state
+        const game_state = {
+            conversations: {}
+        };
         
         
         async function playAudio(text, character) {

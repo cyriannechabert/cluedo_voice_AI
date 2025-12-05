@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 import google.generativeai as genai
 import requests
@@ -10,6 +10,11 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+# Serve character images
+@app.route('/characters/<path:filename>')
+def serve_character_image(filename):
+    return send_from_directory('characters', filename)
 
 # API Keys
 GEMINI_API_KEY = "AIzaSyAIQQQdaHgvxkLVW30klYuTnFZPVkgoYZI"
@@ -179,10 +184,11 @@ def generate_case():
     prompt = """Generate a simple detective mystery case with the following structure:
 
 1. A brief case description (1-2 sentences)
-2. A list of 3-4 characters (witnesses and one suspect):
+2. A list of 4 characters (witnesses and one suspect):
    - Name
    - Role/Relationship
    - Gender (male, female, or other)
+   - Age (approximate age as a number, e.g., 25, 35, 60)
    - Personality traits (2-3 traits)
    - Their testimony/alibi (what they claim happened)
    - A contradiction or clue in their story (something that doesn't add up)
@@ -198,6 +204,7 @@ Format as JSON with this structure:
       "name": "...",
       "role": "...",
       "gender": "male" or "female",
+      "age": 25,
       "personality": ["trait1", "trait2"],
       "testimony": "...",
       "contradiction": "..."
@@ -207,7 +214,7 @@ Format as JSON with this structure:
   "truth": "..."
 }
 
-Keep it simple - a theft, a missing item, or a small mystery. Make sure one character is clearly the suspect with a contradiction in their story. Include gender for each character."""
+Keep it simple - a theft, a missing item, or a small mystery. Make sure one character is clearly the suspect with a contradiction in their story. Include gender and age for each character."""
 
     try:
         response = model.generate_content(prompt)
@@ -230,6 +237,8 @@ Keep it simple - a theft, a missing item, or a small mystery. Make sure one char
                 {
                     "name": "Sarah",
                     "role": "Gallery Manager",
+                    "gender": "female",
+                    "age": 35,
                     "personality": ["nervous", "defensive"],
                     "testimony": "I was in my office all night doing paperwork. I didn't see anything suspicious.",
                     "contradiction": "Claims to be in office but security footage shows her near the gallery at 2 AM"
@@ -237,6 +246,8 @@ Keep it simple - a theft, a missing item, or a small mystery. Make sure one char
                 {
                     "name": "Mike",
                     "role": "Security Guard",
+                    "gender": "male",
+                    "age": 35,
                     "personality": ["calm", "observant"],
                     "testimony": "I did my rounds every hour. Everything seemed normal until I found the painting missing at 6 AM.",
                     "contradiction": "None - his story is consistent"
@@ -244,6 +255,8 @@ Keep it simple - a theft, a missing item, or a small mystery. Make sure one char
                 {
                     "name": "Emma",
                     "role": "Art Dealer",
+                    "gender": "female",
+                    "age": 30,
                     "personality": ["suspicious", "evasive"],
                     "testimony": "I was at home sleeping. I have no idea who could have done this.",
                     "contradiction": "None - but she was the last person seen near the painting before it disappeared"
