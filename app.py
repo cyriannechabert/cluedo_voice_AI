@@ -5,6 +5,8 @@ import requests
 import json
 import os
 from dotenv import load_dotenv
+import hathora
+import io
 
 load_dotenv()
 
@@ -17,8 +19,8 @@ def serve_character_image(filename):
     return send_from_directory('characters', filename)
 
 # API Keys
-GEMINI_API_KEY = "AIzaSyAIQQQdaHgvxkLVW30klYuTnFZPVkgoYZI"
-ELEVEN_LABS_API_KEY = "sk_4ac5780fabcd62abed215a2d4e640f407cafa9804a84b929"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+HATHORA_API_KEY = os.getenv("HATHORA_API_KEY")
 
 # Configure Gemini
 genai.configure(api_key=GEMINI_API_KEY)
@@ -418,89 +420,104 @@ def converse():
 
 @app.route('/api/text-to-speech', methods=['POST'])
 def text_to_speech():
-    """Convert text to speech using 11 Labs"""
+    """Convert text to speech using Hathora SDK"""
     data = request.json
     text = data.get('text')
     character_name = data.get('character', 'default')
-    
+
     if not text:
         return jsonify({'error': 'Missing text'}), 400
-    
-    # Find the character and get their voice_id
-    voice_id = "21m00Tcm4TlvDq8ikWAM"  # Default fallback voice
-    
+
+    # Find the character and get their gender for voice selection
+    character_gender = None
+
     if character_name and game_state['characters']:
         for char in game_state['characters']:
             if char['name'].lower() == character_name.lower():
-                voice_id = char.get('voice_id', voice_id)
-                print(f"Using voice {voice_id} for character {character_name}")
+                character_gender = char.get('gender', 'female')
                 break
-    
-    # Use 11 Labs API with character-specific voice
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
-    
-    headers = {
-        "Accept": "audio/mpeg",
-        "Content-Type": "application/json",
-        "xi-api-key": ELEVEN_LABS_API_KEY
-    }
-    
-    payload = {
-        "text": text,
-        "model_id": "eleven_v3",
-        "voice_settings": {
-            "stability": 0.5,
-            "similarity_boost": 0.5
-        }
-    }
-    
+
+    # Select kokoro voice based on gender
+    # Male voices: am_adam, am_michael
+    # Female voices: af_bella, af_sarah, af_nicole
+    if character_gender == 'male':
+        kokoro_voice = "am_adam"
+    else:
+        kokoro_voice = "af_bella"
+
+    print(f"\n{'='*60}")
+    print(f"Hathora TTS Request")
+    print(f"Character: {character_name} ({character_gender or 'unknown'})")
+    print(f"Kokoro voice: {kokoro_voice}")
+    print(f"Text: {text[:50]}..." if len(text) > 50 else f"Text: {text}")
+    print(f"Text length: {len(text)} chars")
+    print(f"API Key set: {'Yes' if HATHORA_API_KEY else 'No'}")
+    print(f"{'='*60}\n")
+
     try:
-        response = requests.post(url, json=payload, headers=headers)
-        if response.status_code == 200:
-            return response.content, 200, {'Content-Type': 'audio/mpeg'}
-        else:
-            # Log detailed error for debugging
-            try:
-                error_json = response.json()
-                error_msg = error_json.get('detail', {}).get('message', str(error_json))
-            except:
-                error_msg = response.text if hasattr(response, 'text') else 'Unknown error'
-            
-            print(f"\n{'='*60}")
-            print(f"11 Labs API Error {response.status_code}")
-            print(f"Error Message: {error_msg}")
-            print(f"Character: {character_name}")
-            print(f"Voice ID: {voice_id}")
-            print(f"API Key (first 15 chars): {ELEVEN_LABS_API_KEY[:15]}...")
-            print(f"URL: {url}")
-            print(f"{'='*60}\n")
-            
-            return jsonify({
-                'error': f'11 Labs API error: {response.status_code}',
-                'details': error_msg
-            }), response.status_code
+        # Initialize Hathora client
+        client = hathora.Hathora(api_key=HATHORA_API_KEY)
+
+        # Use kokoro model with gender-appropriate voice
+        print(f"Using kokoro model with {kokoro_voice} voice...")
+
+        response = client.text_to_speech.convert(
+            "kokoro",
+            text,
+            voice=kokoro_voice
+        )
+
+        # Save to temporary file and read back (like test_hathora_simple.py)
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+            temp_filename = temp_file.name
+
+        response.save(temp_filename)
+
+        # Read the audio file
+        with open(temp_filename, 'rb') as f:
+            audio_data = f.read()
+
+        # Clean up temp file
+        os.remove(temp_filename)
+
+        print(f"[OK] Audio generated successfully ({len(audio_data)} bytes)")
+
+        return audio_data, 200, {'Content-Type': 'audio/wav'}
+
     except Exception as e:
-        print(f"Exception in TTS: {e}")
+        print(f"\n{'='*60}")
+        print(f"Hathora SDK Error")
+        print(f"Error: {str(e)}")
+        print(f"Character: {character_name}")
+        print(f"{'='*60}\n")
+
         import traceback
         traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
+
+        return jsonify({
+            'error': f'Hathora TTS error: {str(e)}',
+            'details': 'Check server logs for details.'
+        }), 500
 
 @app.route('/api/test-tts-key', methods=['GET'])
 def test_tts_key():
-    """Test 11 Labs API key by getting available voices"""
+    """Test Hathora API key by checking API access"""
     try:
-        url = "https://api.elevenlabs.io/v1/voices"
+        # Test with a simple request to Hathora Models API
+        # Adjust endpoint based on Hathora's actual API documentation
+        url = "https://models.hathora.dev/v1/models"
         headers = {
-            "xi-api-key": ELEVEN_LABS_API_KEY
+            "Authorization": f"Bearer {HATHORA_API_KEY}"
         }
         response = requests.get(url, headers=headers)
-        
+
         if response.status_code == 200:
-            voices = response.json()
+            models = response.json()
             return jsonify({
                 'success': True,
-                'message': 'API key is valid',
-                'voice_count': len(voices.get('voices', []))
+                'message': 'Hathora API key is valid',
+                'details': models
             })
         else:
             error_msg = response.text
